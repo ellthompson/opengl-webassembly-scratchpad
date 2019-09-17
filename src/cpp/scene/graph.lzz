@@ -1,0 +1,26 @@
+#src
+#include <glm/glm.hpp>
+#end
+#hdr
+#include "model.h"
+#end
+
+namespace scene {
+  class Graph {
+    Model world;
+  public:
+    Graph() {
+      world = Model();
+      Model bunny = Model("bunny.obj");
+      Model teapot = Model("teapot.obj");
+      teapot.setTranslate(glm::vec3(5.0f, 0.0f, 0.0f));
+      teapot.setScale(glm::vec3(0.5f));
+      bunny.setScale(glm::vec3(20.0f));
+      world.children.push_back(bunny);
+      world.children.push_back(teapot);
+    }
+    vector<glm::vec3> getSceneVertices() {
+      return world.getVertices();
+    }
+  }
+}

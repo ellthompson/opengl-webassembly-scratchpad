@@ -11,7 +11,7 @@ using namespace config;
 namespace projection
 {
   Camera::Camera() {
-    position = glm::vec3(0.0f, 1.0f, 1.0f);
+    position = glm::vec3(0.0f, 10.0f, 10.0f);
     canvasWidth = 1280;
     canvasHeight = 720;
     zoom = 1.0f;

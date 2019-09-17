@@ -1,0 +1,125 @@
+#src
+#include <glm/gtc/quaternion.hpp>
+#include <glm/gtx/quaternion.hpp>
+#end
+#hdr
+#include <glm/glm.hpp>
+#include <iostream>
+#include <vector>
+using namespace std;
+#end
+
+using namespace std;
+
+namespace scene {
+  class Model {
+  public:
+    glm::vec3 scalingFactors;
+    glm::vec3 rotationFactors;
+    glm::vec3 translationFactors;
+    vector<glm::vec3> vertices;
+    vector<Model> children;
+
+    Model() {
+      scalingFactors = glm::vec3(1.0f);
+      rotationFactors = glm::vec3(0.0f);
+      translationFactors = glm::vec3(0.0f);
+    }
+    Model(std::string modelFilename) {
+      scalingFactors = glm::vec3(1.0f);
+      rotationFactors = glm::vec3(0.0f);
+      translationFactors = glm::vec3(0.0f);
+      loadModel(modelFilename);
+    }
+
+    void setScale(glm::vec3 newScalingFactors) {
+      scalingFactors = newScalingFactors;
+    };
+    void setScale(float newScalingFactor) {
+      scalingFactors = glm::vec3(newScalingFactor);
+    };
+    glm::mat4 getScale() {
+      glm::mat4 M = glm::mat4(1.0f);
+      M[0][0] = scalingFactors[0];
+      M[1][1] = scalingFactors[1];
+      M[2][2] = scalingFactors[2];
+      return M;
+    }
+    void setRotate(glm::vec3 newRotationFactors) {
+      rotationFactors = newRotationFactors;
+    };
+    glm::mat4 getRotate() {
+      glm::quat quaternion = glm::quat(rotationFactors);
+      glm::mat4 M = glm::toMat4(quaternion);
+      return M;
+    }
+    void setTranslate(glm::vec3 newTranslationFactors) {
+      translationFactors = newTranslationFactors;
+    };
+    glm::mat4 getTranslate() {
+      glm::mat4 M = glm::mat4(1.0f);
+      M[3][0] = translationFactors[0];
+      M[3][1] = translationFactors[1];
+      M[3][2] = translationFactors[2];
+      return M;
+    }
+    glm::mat4 getTransform() {
+      return getTranslate() * getRotate() * getScale();
+    }
+    vector<glm::vec3> getVertices(){
+      vector<glm::vec3> verticesOut;
+      for (int i = 0; i < vertices.size(); i++) {
+        glm::vec4 homogenousVertex = glm::vec4(vertices.at(i), 1.0f);
+        glm::vec3 transformedVertex = glm::vec3(getTransform() * homogenousVertex);
+        verticesOut.push_back(transformedVertex);
+        // verticesOut.push_back(vertices.at(i));
+      }
+      for (int c = 0; c < children.size(); c++) {
+        vector<glm::vec3> childVertices = children.at(c).getVertices();
+        for (int i = 0; i < childVertices.size(); i++) {
+          glm::vec4 homogenousVertex = glm::vec4(childVertices.at(i), 1.0f);
+          glm::vec3 transformedVertex = glm::vec3(getTransform() * homogenousVertex);
+          verticesOut.push_back(transformedVertex);
+          // verticesOut.push_back(childVertices.at(i));
+        }
+      }
+      return verticesOut;
+    };
+    int loadModel(std::string filename) {
+        vector<glm::vec3> verticesIn;
+        vector<unsigned int> faces;
+        FILE * file = fopen(filename.c_str(), "r");
+        if( file == NULL ){
+            printf("Impossible to open the file !\n");
+            return false;
+        }
+        while( 1 ){
+          char lineHeader[128];
+          int res = fscanf(file, "%s", lineHeader);
+          if (res == EOF) {
+              break;
+          }
+          if ( strcmp( lineHeader, "v" ) == 0 ){
+            glm::vec3 vertex;
+            fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
+            verticesIn.push_back(vertex);
+          }
+          else if ( strcmp( lineHeader, "f" ) == 0 ){
+            glm::vec3 face;
+            unsigned int vI1;
+            unsigned int vI2;
+            unsigned int vI3;
+            fscanf(file, "%d %d %d\n", &vI1, &vI2, &vI3 );
+            faces.push_back(vI1);
+            faces.push_back(vI2);
+            faces.push_back(vI3);
+          }
+        }
+
+        for (int i = 0; i < faces.size(); i++) {
+          vertices.push_back(verticesIn.at(faces.at(i) - 1));
+        }
+        return 0;
+    }
+  };
+}

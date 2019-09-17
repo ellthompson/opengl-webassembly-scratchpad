@@ -17,66 +17,19 @@
 
 #include "config/constants.h"
 #include "projection/camera.h"
+#include "scene/graph.h"
 
 using namespace std;
 using namespace emscripten;
 using namespace config;
 using namespace projection;
-
-int loadModel(std::string filename, vector<glm::vec3>* verticesOut) {
-    vector<glm::vec3> vertices;
-    vector<unsigned int> faces;
-
-    FILE * file = fopen(filename.c_str(), "r");
-    if( file == NULL ){
-        printf("Impossible to open the file !\n");
-        return false;
-    }
-    while( 1 ){
-      char lineHeader[128];
-      int res = fscanf(file, "%s", lineHeader);
-      if (res == EOF) {
-          break;
-      }
-      if ( strcmp( lineHeader, "v" ) == 0 ){
-        glm::vec3 vertex;
-        fscanf(file, "%f %f %f\n", &vertex.x, &vertex.y, &vertex.z );
-        vertices.push_back(vertex);
-      }
-      else if ( strcmp( lineHeader, "f" ) == 0 ){
-        glm::vec3 face;
-        unsigned int vI1;
-        unsigned int vI2;
-        unsigned int vI3;
-        fscanf(file, "%d %d %d\n", &vI1, &vI2, &vI3 );
-        faces.push_back(vI1);
-        faces.push_back(vI2);
-        faces.push_back(vI3);
-      }
-    }
-
-
-    // glm::mat4 M = glm::mat4(1.0f);
-    // M[0][0] = 20.0f;
-    // M[1][1] = 20.0f;
-    // M[2][2] = 20.0f;
-
-    // for (int i = 0; i < vertices.size(); i++) {
-    // }
-    for (int i = 0; i < faces.size(); i++) {
-      verticesOut->push_back(vertices.at(faces.at(i) - 1));
-      // verticesOut->at(i) = glm::vec3(M * glm::vec4(verticesOut->at(i), 1.0f));
-    }
-
-    // DUMP(verticesOut->size());
-
-    return 0;
-}
+using namespace scene;
 
 GLchar* vertexSource = NULL;
 GLchar* fragmentSource = NULL;
 
 Camera camera = Camera();
+Graph sceneGraph = Graph();
 
 std::function<void()> loop;
 void main_loop() { loop(); }
@@ -110,23 +63,7 @@ int main()
     GLuint vbo;
     glGenBuffers(1, &vbo);
 
-    vector<glm::vec3> vertices;
-    loadModel("bunny.obj", &vertices);
-
-    // vertices.push_back(glm::vec3(
-    //   0.0f, 0.0f, 10.0f
-    // ));
-    // vertices.push_back(glm::vec3(
-    //   10.0f, 0.0f, 0.0f
-    // ));
-    // vertices.push_back(glm::vec3(
-    //   0.0f, 10.0f, 0.0f
-    // ));
-
-    // for (int i = 0; i < vertices.size(); i++) {
-    //   DUMP(vertices.at(i));
-    // }
-    // DUMP(vertices);
+    vector<glm::vec3> vertices = sceneGraph.getSceneVertices();
 
     glBindBuffer(GL_ARRAY_BUFFER, vbo);
     glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(glm::vec3), &vertices[0], GL_STATIC_DRAW);
