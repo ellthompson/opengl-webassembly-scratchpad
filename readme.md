@@ -16,7 +16,7 @@ A simple way to begin writing & testing shader code in the browser
 
 ### Adding new C++ files
 
-After adding a new `.cpp` file to the project, you must let the emscripten compiler know about its prescence. To do this add the path to the `.cpp` file into the `em++` command within the `./build.sh` file.
+After adding a new `.cpp` file to the project, you must let the emscripten compiler know about its prescence. To do this add the path of the new file into the `em++` command within the `./build.sh` file.
 
 ### Lazy C++ Class Preprocessing
 
