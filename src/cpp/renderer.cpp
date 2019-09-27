@@ -14,22 +14,25 @@
 #include <streambuf>
 #include <glm/glm.hpp>
 #include <glm_helpers.h>
+#include <json/json.h>
 
 #include "config/constants.h"
 #include "projection/camera.h"
 #include "scene/graph.h"
+#include "events/eventManager.h"
 
 using namespace std;
 using namespace emscripten;
 using namespace config;
 using namespace projection;
 using namespace scene;
+using namespace events;
 
 GLchar* vertexSource = NULL;
 GLchar* fragmentSource = NULL;
 
 Camera camera = Camera();
-Graph sceneGraph = Graph();
+// Graph sceneGraph = Graph();
 
 std::function<void()> loop;
 void main_loop() { loop(); }
